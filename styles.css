@@ -1,0 +1,236 @@
+/* === БАЗА === */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background: #f4efff;
+  color: #2d2d2d;
+  padding: 20px;
+}
+
+/* === ШАПКА === */
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #6a6a6a;
+  margin-top: 5px;
+}
+
+/* === СЕТКА === */
+
+.layout {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 0 20px 40px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.sidebar {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.content {
+  flex: 1;
+  max-width: 850px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* === ПАНЕЛИ === */
+
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.panel.big {
+  padding: 25px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h2 {
+  font-size: 22px;
+}
+
+/* === ФОРМЫ === */
+
+.form label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d3c9ff;
+  margin-bottom: 15px;
+  background: #faf8ff;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #8b6df0;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #7755e6;
+}
+
+button.secondary {
+  background: #e2daf8;
+  color: #4d4d4d;
+}
+
+button.secondary:hover {
+  background: #d5c9f8;
+}
+
+/* === ДВЕ КОЛОНКИ В ФОРМЕ === */
+
+.two-cols {
+  display: flex;
+  gap: 15px;
+}
+
+.two-cols div {
+  flex: 1;
+}
+
+/* === КАРТОЧКИ ИДЕЙ === */
+
+.idea-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+
+.idea-card h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.idea-meta {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.idea-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.idea-actions button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* === КНОПКА УДАЛЕНИЯ === */
+
+.delete-btn {
+  background: #e06bc4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #cc5db2;
+}
+
+/* === СТАТУСЫ === */
+
+.status-label {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 6px;
+  color: white;
+}
+
+.status-idea {
+  background: #8b6df0;
+}
+
+.status-planned {
+  background: #47a6ff;
+}
+
+.status-ordered {
+  background: #2ecc71;
+}
+
+.status-bought {
+  background: #ff9f43;
+}
+
+.status-packed {
+  background: #ff6b81;
+}
+
+.status-gifted {
+  background: #9b59b6;
+}
+
+/* === АДАПТИВ === */
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar,
+  .content {
+    width: 100%;
+    max-width: 100%;
+  }
+}
