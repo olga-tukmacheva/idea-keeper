@@ -1,279 +1,475 @@
-/* ========= НАСТРОЙКА SUPABASE ========= */
-
+// ВСТАВЬ СЮДА СВОИ ДАННЫЕ SUPABASE
 const SUPABASE_URL = "https://skpjusvtxyofrtnnjrkc.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrcGp1c3Z0eHlvZnJ0bm5qcmtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzEwNTksImV4cCI6MjA4MDE0NzA1OX0.wC_8wrPm6pMMLzJsqxfJi9cOGg9L-dK2daE4Ws5FmG8";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ========= ГЛОБАЛЬНЫЕ МАССИВЫ ========= */
 
+// Отображаемые названия статусов
+const STATUS_LABELS = {
+  idea: "Идея",
+  planned: "Запланировано",
+  ordered: "Заказано",
+  packed: "Упаковано",
+  gifted: "Подарено",
+};
+
+// Глобальные данные
 let people = [];
+let categories = [];
 let ideas = [];
-let categoriesList = ["Хобби", "Книги", "Гаджеты", "Для дома", "Одежда", "Красота", "Для кухни", "Аксессуары", "Креативные"];
+let editingIdeaId = null;
 
-/* ========= ЗАГРУЗКА ДАННЫХ ========= */
+// Элементы DOM
+const addPersonForm = document.getElementById("add-person-form");
+const personNameInput = document.getElementById("person-name");
+const personRelationInput = document.getElementById("person-relation");
 
+const filterForm = document.getElementById("filter-form");
+const filterPersonSelect = document.getElementById("filter-person");
+const filterStatusSelect = document.getElementById("filter-status");
+const priceMinInput = document.getElementById("price-min");
+const priceMaxInput = document.getElementById("price-max");
+const resetFiltersBtn = document.getElementById("reset-filters");
+
+const ideasList = document.getElementById("ideas-list");
+const ideasCountSpan = document.getElementById("ideas-count");
+
+const addIdeaForm = document.getElementById("add-idea-form");
+const ideaFormTitle = document.getElementById("idea-form-title");
+const ideaCancelEditBtn = document.getElementById("idea-cancel-edit");
+const ideaSubmitBtn = document.getElementById("idea-submit");
+
+const ideaPersonSelect = document.getElementById("idea-person");
+const ideaTitleInput = document.getElementById("idea-title");
+const ideaLinkInput = document.getElementById("idea-link");
+const ideaPriceInput = document.getElementById("idea-price");
+const ideaCategorySelect = document.getElementById("idea-category");
+const ideaCommentInput = document.getElementById("idea-comment");
+const ideaStatusSelect = document.getElementById("idea-status");
+
+// Инициализация
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadPeople();
+  await loadCategories();
+  await loadIdeas();
+  setupEventListeners();
+});
+
+// Загрузка людей
 async function loadPeople() {
-  const { data, error } = await supabaseClient.from("people").select("*").order("created_at");
+  const { data, error } = await supabaseClient
+    .from("people")
+    .select("*")
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error("Ошибка загрузки людей:", error);
+    alert("Не удалось загрузить список людей.");
     return;
   }
 
-  people = data;
-  updatePeopleSelects();
+  people = data || [];
+  renderPeopleSelects();
 }
 
+// Загрузка категорий
 async function loadCategories() {
-  // уже есть фиксированный список
+  const { data, error } = await supabaseClient
+    .from("categories")
+    .select("*")
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("Ошибка загрузки категорий:", error);
+    return;
+  }
+
+  categories = data || [];
+  renderCategoriesSelect();
 }
 
+// Загрузка идей
 async function loadIdeas() {
-  const { data, error } = await supabaseClient.from("ideas").select("*").order("created_at");
+  const { data, error } = await supabaseClient
+    .from("ideas")
+    .select("*")
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error("Ошибка загрузки идей:", error);
+    alert("Не удалось загрузить идеи.");
     return;
   }
 
-  ideas = data;
-  renderIdeas(ideas);
+  ideas = data || [];
+  renderIdeas();
 }
 
-/* ========= ОБНОВЛЕНИЕ SELECT ========= */
+// Наполнение селектов
+function renderPeopleSelects() {
+  // Для фильтра
+  filterPersonSelect.innerHTML = `<option value="all">Все</option>`;
+  people.forEach((person) => {
+    const option = document.createElement("option");
+    option.value = person.id;
+    option.textContent = person.name;
+    filterPersonSelect.appendChild(option);
+  });
 
-function updatePeopleSelects() {
-  const selects = [
-    document.getElementById("filter-person"),
-    document.getElementById("idea-person")
-  ];
+  // Для формы идеи
+  ideaPersonSelect.innerHTML = `<option value="">Выберите человека</option>`;
+  people.forEach((person) => {
+    const option = document.createElement("option");
+    option.value = person.id;
+    option.textContent = person.name;
+    ideaPersonSelect.appendChild(option);
+  });
+}
 
-  selects.forEach(sel => {
-    if (!sel) return;
-    const current = sel.value;
+function renderCategoriesSelect() {
+  ideaCategorySelect.innerHTML = `<option value="">Выберите категорию</option>`;
+  categories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.title;
+    option.textContent = cat.title;
+    ideaCategorySelect.appendChild(option);
+  });
+}
 
-    sel.innerHTML = sel.id === "filter-person"
-      ? `<option value="all">Все</option>`
-      : `<option value="">Выберите человека</option>`;
+// Рендер списка идей с учётом фильтров
+function renderIdeas() {
+  ideasList.innerHTML = "";
 
-    people.forEach(p => {
-      const option = document.createElement("option");
-      option.value = p.id;
-      option.textContent = p.name;
-      sel.appendChild(option);
+  const personFilter = filterPersonSelect.value;
+  const statusFilter = filterStatusSelect.value;
+  const minPrice = priceMinInput.value ? Number(priceMinInput.value) : null;
+  const maxPrice = priceMaxInput.value ? Number(priceMaxInput.value) : null;
+
+  // создаём мапу людей для быстрого доступа
+  const peopleMap = {};
+  for (const p of people) {
+    peopleMap[p.id] = p;
+  }
+
+  const filtered = ideas.filter((idea) => {
+    if (personFilter !== "all" && idea.person_id !== personFilter) {
+      return false;
+    }
+    if (statusFilter !== "all" && idea.status !== statusFilter) {
+      return false;
+    }
+    if (minPrice !== null && idea.price !== null && idea.price < minPrice) {
+      return false;
+    }
+    if (maxPrice !== null && idea.price !== null && idea.price > maxPrice) {
+      return false;
+    }
+    return true;
+  });
+
+  ideasCountSpan.textContent =
+    filtered.length === 1 ? "1 идея" : `${filtered.length} идей`;
+
+  filtered.forEach((idea) => {
+    const person = peopleMap[idea.person_id];
+    const card = createIdeaCard(idea, person);
+    ideasList.appendChild(card);
+  });
+}
+
+// Создание карточки идеи
+function createIdeaCard(idea, person) {
+  const card = document.createElement("article");
+  card.className = "idea-card";
+  card.dataset.id = idea.id;
+
+  const statusLabel = STATUS_LABELS[idea.status] || idea.status || "Идея";
+  const statusClass = `status-${idea.status || "idea"}`;
+
+  // Основная часть
+  const mainDiv = document.createElement("div");
+  mainDiv.className = "idea-main";
+
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "idea-header";
+
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "idea-title";
+  titleDiv.textContent = idea.title;
+
+  const priceDiv = document.createElement("div");
+  priceDiv.className = "idea-price";
+  priceDiv.textContent = idea.price ? `${idea.price} ₽` : "";
+
+  headerDiv.appendChild(titleDiv);
+  headerDiv.appendChild(priceDiv);
+
+  const metaDiv = document.createElement("div");
+  metaDiv.className = "idea-meta";
+
+  const line1 = document.createElement("div");
+  line1.textContent = person ? person.name : "Без человека";
+
+  const line2 = document.createElement("div");
+  line2.textContent = idea.category || "";
+
+  metaDiv.appendChild(line1);
+  if (idea.category) metaDiv.appendChild(line2);
+
+  mainDiv.appendChild(headerDiv);
+  mainDiv.appendChild(metaDiv);
+
+  // Статус-бар
+  const statusBar = document.createElement("div");
+  statusBar.className = `status-bar ${statusClass}`;
+  const statusFill = document.createElement("div");
+  statusFill.className = "status-fill";
+  statusFill.textContent = statusLabel;
+  statusBar.appendChild(statusFill);
+
+  // Футер с кнопкой "Подробнее"
+  const footerDiv = document.createElement("div");
+  footerDiv.className = "idea-footer";
+
+  const detailsToggle = document.createElement("button");
+  detailsToggle.type = "button";
+  detailsToggle.className = "btn btn-secondary details-toggle";
+  detailsToggle.textContent = "Подробнее";
+
+  footerDiv.appendChild(detailsToggle);
+
+  // Детали
+  const detailsDiv = document.createElement("div");
+  detailsDiv.className = "idea-details hidden";
+
+  if (idea.comment) {
+    const row = document.createElement("div");
+    row.className = "idea-details-row";
+    row.innerHTML = `<span class="idea-details-label">Комментарий:</span> ${
+      idea.comment
+    }`;
+    detailsDiv.appendChild(row);
+  }
+
+  if (idea.link) {
+    const row = document.createElement("div");
+    row.className = "idea-details-row";
+    const a = document.createElement("a");
+    a.href = idea.link;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "idea-link";
+    a.textContent = "Открыть ссылку";
+    row.innerHTML = `<span class="idea-details-label">Ссылка:</span> `;
+    row.appendChild(a);
+    detailsDiv.appendChild(row);
+  }
+
+  const statusRow = document.createElement("div");
+  statusRow.className = "idea-details-row";
+  statusRow.innerHTML = `<span class="idea-details-label">Статус:</span> ${statusLabel}`;
+  detailsDiv.appendChild(statusRow);
+
+  // Кнопки действий
+  const actionsDiv = document.createElement("div");
+  actionsDiv.className = "idea-actions";
+
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "btn btn-secondary";
+  editBtn.textContent = "Редактировать";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "btn btn-danger";
+  deleteBtn.textContent = "Удалить";
+
+  actionsDiv.appendChild(editBtn);
+  actionsDiv.appendChild(deleteBtn);
+  detailsDiv.appendChild(actionsDiv);
+
+  // Сборка
+  card.appendChild(mainDiv);
+  card.appendChild(statusBar);
+  card.appendChild(footerDiv);
+  card.appendChild(detailsDiv);
+
+  // Обработчики
+  detailsToggle.addEventListener("click", () => {
+    const isHidden = detailsDiv.classList.contains("hidden");
+    detailsDiv.classList.toggle("hidden", !isHidden);
+    detailsToggle.textContent = isHidden ? "Скрыть" : "Подробнее";
+  });
+
+  editBtn.addEventListener("click", () => startEditIdea(idea));
+  deleteBtn.addEventListener("click", () => deleteIdea(idea));
+
+  return card;
+}
+
+// Настройка слушателей
+function setupEventListeners() {
+  // Добавление человека
+  addPersonForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = personNameInput.value.trim();
+    const relation = personRelationInput.value.trim() || null;
+
+    if (!name) return;
+
+    const { error } = await supabaseClient.from("people").insert({
+      name,
+      relation,
     });
 
-    if (current) sel.value = current;
-  });
-}
-
-/* ========= ДОБАВЛЕНИЕ ЧЕЛОВЕКА ========= */
-
-async function addPerson(e) {
-  e.preventDefault();
-
-  const name = document.getElementById("person-name").value.trim();
-  const relation = document.getElementById("person-relation").value.trim();
-
-  if (!name) return alert("Введите имя");
-
-  const { error } = await supabaseClient.from("people").insert([{ name, relation }]);
-
-  if (error) {
-    alert("Ошибка сохранения человека");
-    return;
-  }
-
-  document.getElementById("person-name").value = "";
-  document.getElementById("person-relation").value = "";
-
-  loadPeople();
-}
-
-/* ========= ДОБАВЛЕНИЕ ИДЕИ ========= */
-
-async function addIdea(e) {
-  e.preventDefault();
-
-  const person_id = document.getElementById("idea-person").value;
-  const title = document.getElementById("idea-title").value.trim();
-  const link = document.getElementById("idea-link").value.trim();
-  const price = document.getElementById("idea-price").value.trim();
-  const category = document.getElementById("idea-category").value;
-  const comment = document.getElementById("idea-comment").value.trim();
-  const status = document.getElementById("idea-status").value;
-
-  if (!person_id) return alert("Выберите человека");
-  if (!title) return alert("Введите идею");
-
-  const { error } = await supabaseClient.from("ideas").insert([
-    {
-      person_id,
-      title,
-      link: link || null,
-      price: price || null,
-      category,
-      comment,
-      status
+    if (error) {
+      console.error("Ошибка сохранения человека:", error);
+      alert("Не удалось сохранить человека.");
+      return;
     }
-  ]);
 
-  if (error) {
-    alert("Ошибка сохранения идеи");
-    return;
-  }
+    personNameInput.value = "";
+    personRelationInput.value = "";
+    await loadPeople();
+  });
 
-  document.getElementById("idea-title").value = "";
-  document.getElementById("idea-link").value = "";
-  document.getElementById("idea-price").value = "";
-  document.getElementById("idea-category").value = "";
-  document.getElementById("idea-comment").value = "";
-  document.getElementById("idea-status").value = "idea";
+  // Фильтр
+  filterForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    renderIdeas();
+  });
 
-  loadIdeas();
-}
+  resetFiltersBtn.addEventListener("click", () => {
+    filterPersonSelect.value = "all";
+    filterStatusSelect.value = "all";
+    priceMinInput.value = "";
+    priceMaxInput.value = "";
+    renderIdeas();
+  });
 
-/* ========= РЕНДЕР ИДЕЙ ========= */
+  // Сохранение идеи (новой или редактируемой)
+  addIdeaForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-function renderIdeas(list) {
-  const container = document.getElementById("ideas-list");
-  const count = document.getElementById("ideas-count");
+    if (!ideaPersonSelect.value || !ideaTitleInput.value.trim()) {
+      alert("Выберите человека и укажите название идеи.");
+      return;
+    }
 
-  container.innerHTML = "";
+    const payload = collectIdeaPayload();
 
-  count.textContent = `${list.length} идей`;
+    try {
+      if (editingIdeaId) {
+        const { error } = await supabaseClient
+          .from("ideas")
+          .update(payload)
+          .eq("id", editingIdeaId);
 
-  list.forEach(idea => {
-    const card = document.createElement("div");
-    card.className = "idea-card";
-    card.id = `idea-${idea.id}`;
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from("ideas").insert(payload);
+        if (error) throw error;
+      }
 
-    const personName = people.find(p => p.id === idea.person_id)?.name || "—";
+      await loadIdeas();
+      setIdeaFormMode("create");
+    } catch (error) {
+      console.error("Ошибка сохранения идеи:", error);
+      alert("Не удалось сохранить идею.");
+    }
+  });
 
-    card.innerHTML = `
-      <div class="idea-title">${idea.title}</div>
-      <div class="idea-meta">${idea.price ? idea.price + " ₽" : ""}</div>
-      <div class="idea-meta">${idea.category || ""}</div>
-      <div class="idea-meta">${personName}</div>
-      <div class="idea-meta">Статус: ${idea.status}</div>
-
-      <div class="idea-actions">
-        <button class="edit-btn" onclick="editIdea('${idea.id}')">Редактировать</button>
-        <button class="delete-btn" onclick="deleteIdea('${idea.id}')">Удалить</button>
-      </div>
-    `;
-
-    container.appendChild(card);
+  ideaCancelEditBtn.addEventListener("click", () => {
+    setIdeaFormMode("create");
   });
 }
 
-/* ========= РЕДАКТИРОВАНИЕ ========= */
+// Сбор данных формы идеи
+function collectIdeaPayload() {
+  const title = ideaTitleInput.value.trim();
+  const link = ideaLinkInput.value.trim() || null;
+  const price =
+    ideaPriceInput.value.trim() === ""
+      ? null
+      : Number(ideaPriceInput.value.trim());
+  const category = ideaCategorySelect.value || null;
+  const comment = ideaCommentInput.value.trim() || null;
+  const status = ideaStatusSelect.value || "idea";
 
-function editIdea(id) {
-  const idea = ideas.find(i => i.id === id);
-
-  if (!idea) return;
-
-  const wrap = document.getElementById(`idea-${id}`);
-
-  wrap.innerHTML = `
-    <div class="edit-form">
-
-      <label>Название:</label>
-      <input id="edit-title" value="${idea.title}" />
-
-      <label>Цена:</label>
-      <input id="edit-price" type="number" value="${idea.price || ""}" />
-
-      <label>Ссылка:</label>
-      <input id="edit-link" value="${idea.link || ""}" />
-
-      <label>Категория:</label>
-      <select id="edit-category">
-        ${categoriesList.map(c => `<option value="${c}" ${c === idea.category ? "selected" : ""}>${c}</option>`).join("")}
-      </select>
-
-      <label>Комментарий:</label>
-      <textarea id="edit-comment">${idea.comment || ""}</textarea>
-
-      <label>Статус:</label>
-      <select id="edit-status">
-        <option value="idea" ${idea.status === "idea" ? "selected" : ""}>Идея</option>
-        <option value="planned" ${idea.status === "planned" ? "selected" : ""}>Запланировано</option>
-        <option value="ordered" ${idea.status === "ordered" ? "selected" : ""}>Заказано</option>
-        <option value="packed" ${idea.status === "packed" ? "selected" : ""}>Упаковано</option>
-        <option value="bought" ${idea.status === "bought" ? "selected" : ""}>Куплено</option>
-        <option value="given" ${idea.status === "given" ? "selected" : ""}>Подарено</option>
-      </select>
-
-      <div class="edit-buttons">
-        <button onclick="saveIdeaChanges('${id}')" class="save-edit-btn">Сохранить</button>
-        <button onclick="loadIdeas()" class="cancel-edit-btn">Отмена</button>
-      </div>
-
-    </div>
-  `;
-}
-
-async function saveIdeaChanges(id) {
-  const newData = {
-    title: document.getElementById("edit-title").value.trim(),
-    price: document.getElementById("edit-price").value.trim() || null,
-    link: document.getElementById("edit-link").value.trim() || null,
-    category: document.getElementById("edit-category").value,
-    comment: document.getElementById("edit-comment").value.trim(),
-    status: document.getElementById("edit-status").value
+  return {
+    person_id: ideaPersonSelect.value,
+    title,
+    link,
+    price,
+    category,
+    comment,
+    status,
   };
-
-  await supabaseClient.from("ideas").update(newData).eq("id", id);
-
-  loadIdeas();
 }
 
-/* ========= УДАЛЕНИЕ ========= */
-
-async function deleteIdea(id) {
-  if (!confirm("Удалить идею?")) return;
-
-  await supabaseClient.from("ideas").delete().eq("id", id);
-  loadIdeas();
+// Режим формы: создание / редактирование
+function setIdeaFormMode(mode, idea) {
+  if (mode === "edit" && idea) {
+    editingIdeaId = idea.id;
+    ideaFormTitle.textContent = "Редактирование идеи";
+    ideaSubmitBtn.textContent = "Сохранить изменения";
+    ideaCancelEditBtn.classList.remove("hidden");
+  } else {
+    editingIdeaId = null;
+    ideaFormTitle.textContent = "Новая идея";
+    ideaSubmitBtn.textContent = "Сохранить идею";
+    ideaCancelEditBtn.classList.add("hidden");
+    addIdeaForm.reset();
+    // вернуть плейсхолдеры для селектов
+    ideaPersonSelect.value = "";
+    ideaCategorySelect.value = "";
+    ideaStatusSelect.value = "idea";
+  }
 }
 
-/* ========= ФИЛЬТР ========= */
+// Запуск редактирования
+function startEditIdea(idea) {
+  const personId = idea.person_id || "";
+  const title = idea.title || "";
+  const link = idea.link || "";
+  const price = idea.price != null ? String(idea.price) : "";
+  const category = idea.category || "";
+  const comment = idea.comment || "";
+  const status = idea.status || "idea";
 
-document.getElementById("filter-form").addEventListener("submit", function (e) {
-  e.preventDefault();
+  ideaPersonSelect.value = personId;
+  ideaTitleInput.value = title;
+  ideaLinkInput.value = link;
+  ideaPriceInput.value = price;
+  ideaCategorySelect.value = category;
+  ideaCommentInput.value = comment;
+  ideaStatusSelect.value = status;
 
-  let result = ideas;
+  setIdeaFormMode("edit", idea);
+}
 
-  const person = document.getElementById("filter-person").value;
-  const status = document.getElementById("filter-status").value;
-  const min = Number(document.getElementById("price-min").value);
-  const max = Number(document.getElementById("price-max").value);
+// Удаление идеи
+async function deleteIdea(idea) {
+  const confirmDelete = confirm(
+    `Удалить идею «${idea.title}»? Это действие нельзя будет отменить.`
+  );
+  if (!confirmDelete) return;
 
-  if (person !== "all") result = result.filter(i => i.person_id === person);
-  if (status !== "all") result = result.filter(i => i.status === status);
-  if (min) result = result.filter(i => (i.price || 0) >= min);
-  if (max) result = result.filter(i => (i.price || 0) <= max);
+  const { error } = await supabaseClient
+    .from("ideas")
+    .delete()
+    .eq("id", idea.id);
 
-  renderIdeas(result);
-});
+  if (error) {
+    console.error("Ошибка удаления идеи:", error);
+    alert("Не удалось удалить идею.");
+    return;
+  }
 
-document.getElementById("reset-filters").addEventListener("click", () => {
-  document.getElementById("filter-person").value = "all";
-  document.getElementById("filter-status").value = "all";
-  document.getElementById("price-min").value = 0;
-  document.getElementById("price-max").value = 5000;
-
-  renderIdeas(ideas);
-});
-
-/* ========= СТАРТ ========= */
-
-document.getElementById("add-person-form").addEventListener("submit", addPerson);
-document.getElementById("add-idea-form").addEventListener("submit", addIdea);
-
-loadPeople();
-loadCategories();
-loadIdeas();
+  await loadIdeas();
+  // если удаляем редактируемую — выходим из режима редактирования
+  if (editingIdeaId === idea.id) {
+    setIdeaFormMode("create");
+  }
+}

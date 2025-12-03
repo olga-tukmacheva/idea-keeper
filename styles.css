@@ -1,236 +1,399 @@
-/* === БАЗА === */
+:root {
+  --bg: #f4ecff;
+  --panel-bg: #ffffff;
+  --accent: #7c5cff;
+  --accent-soft: #a98dff;
+  --accent-strong: #5a3be0;
+  --danger: #ff6b9c;
+  --text-main: #222222;
+  --text-muted: #777777;
+  --border-soft: #e1d9ff;
+  --radius-panel: 16px;
+  --radius-card: 14px;
+  --shadow-soft: 0 12px 30px rgba(51, 26, 115, 0.08);
+  --transition-fast: 0.18s ease;
+  --status-idea: #a98dff;
+  --status-planned: #5da9ff;
+  --status-ordered: #35c88a;
+  --status-packed: #ffb64b;
+  --status-gifted: #ff6b9c;
+}
 
-* {
-  margin: 0;
-  padding: 0;
+/* Базовая раскладка */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  font-family: "Inter", sans-serif;
 }
 
 body {
-  background: #f4efff;
-  color: #2d2d2d;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: var(--text-main);
+  background: radial-gradient(circle at 0 0, #fdf8ff 0, #f4ecff 40%, #efe7ff 100%);
 }
 
-/* === ШАПКА === */
-
 .header {
-  text-align: center;
-  margin-bottom: 30px;
+  max-width: 1120px;
+  margin: 24px auto 8px;
+  padding: 8px 16px;
 }
 
 .header h1 {
-  font-size: 32px;
+  margin: 0 0 4px;
+  font-size: 28px;
   font-weight: 700;
 }
 
 .subtitle {
-  color: #6a6a6a;
-  margin-top: 5px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
 }
-
-/* === СЕТКА === */
 
 .layout {
-  display: flex;
+  max-width: 1120px;
+  margin: 0 auto 40px;
+  padding: 0 16px 24px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
   gap: 20px;
-  justify-content: center;
-  padding: 0 20px 40px;
-  max-width: 1500px;
-  margin: 0 auto;
 }
 
+/* Панели слева/справа */
+
 .sidebar {
-  width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .content {
-  flex: 1;
-  max-width: 850px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* === ПАНЕЛИ === */
-
 .panel {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  background: var(--panel-bg);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-soft);
+  padding: 18px 18px 20px;
 }
 
 .panel.big {
-  padding: 25px;
+  padding: 20px 22px 24px;
+}
+
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
 }
 
 .panel-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.panel-header h2 {
-  font-size: 22px;
+.ideas-count {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-/* === ФОРМЫ === */
+/* Формы */
 
-.form label {
-  font-size: 14px;
-  margin-bottom: 4px;
-  display: block;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-input,
+label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="url"],
+input[type="number"],
 select,
 textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #d3c9ff;
-  margin-bottom: 15px;
-  background: #faf8ff;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+  background-color: #faf8ff;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.15);
+  background-color: #ffffff;
 }
 
 textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 70px;
 }
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: #8b6df0;
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  background: #7755e6;
-}
-
-button.secondary {
-  background: #e2daf8;
-  color: #4d4d4d;
-}
-
-button.secondary:hover {
-  background: #d5c9f8;
-}
-
-/* === ДВЕ КОЛОНКИ В ФОРМЕ === */
 
 .two-cols {
-  display: flex;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.two-cols div {
-  flex: 1;
+/* Кнопки */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  font-size: 14px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast),
+    color var(--transition-fast), opacity var(--transition-fast);
+  white-space: nowrap;
 }
 
-/* === КАРТОЧКИ ИДЕЙ === */
+.btn-primary {
+  background: linear-gradient(90deg, var(--accent) 0, var(--accent-strong) 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(92, 64, 214, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(92, 64, 214, 0.42);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 12px rgba(92, 64, 214, 0.3);
+}
+
+.btn-secondary {
+  background: #f4ecff;
+  color: var(--accent);
+  border: 1px solid var(--border-soft);
+}
+
+.btn-secondary:hover {
+  background: #ebe0ff;
+}
+
+.btn-danger {
+  background: #ffe1ec;
+  color: #c42557;
+  border: 1px solid #ffc2d9;
+}
+
+.btn-danger:hover {
+  background: #ffcfe0;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Сетка идей */
+
+.ideas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+/* Карточка идеи */
 
 .idea-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  background: #fbf9ff;
+  border-radius: var(--radius-card);
+  padding: 12px 12px 10px;
+  box-shadow: 0 6px 16px rgba(76, 47, 177, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
-.idea-card h3 {
-  font-size: 18px;
-  margin-bottom: 6px;
+.idea-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.idea-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.idea-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.idea-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  white-space: nowrap;
 }
 
 .idea-meta {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Статус-бар */
+
+.status-bar {
+  margin-top: 2px;
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ece6ff;
+  display: flex;
+  align-items: center;
+}
+
+.status-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Цвета статусов */
+
+.status-idea .status-fill {
+  background: var(--status-idea);
+}
+
+.status-planned .status-fill {
+  background: var(--status-planned);
+}
+
+.status-ordered .status-fill {
+  background: var(--status-ordered);
+}
+
+.status-packed .status-fill {
+  background: var(--status-packed);
+}
+
+.status-gifted .status-fill {
+  background: var(--status-gifted);
+}
+
+/* Детали */
+
+.idea-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.details-toggle {
+  font-size: 13px;
+}
+
+.idea-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(124, 92, 255, 0.25);
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.idea-details-row {
+  margin-bottom: 4px;
+}
+
+.idea-details-label {
+  font-weight: 500;
+}
+
+.idea-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.idea-link:hover {
+  text-decoration: underline;
 }
 
 .idea-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 8px;
+  justify-content: flex-end;
 }
 
-.idea-actions button {
-  flex: 1;
-  padding: 10px;
-  font-size: 14px;
-}
+/* Адаптив */
 
-/* === КНОПКА УДАЛЕНИЯ === */
-
-.delete-btn {
-  background: #e06bc4;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  transition: 0.2s;
-}
-
-.delete-btn:hover {
-  background: #cc5db2;
-}
-
-/* === СТАТУСЫ === */
-
-.status-label {
-  display: inline-block;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-top: 6px;
-  color: white;
-}
-
-.status-idea {
-  background: #8b6df0;
-}
-
-.status-planned {
-  background: #47a6ff;
-}
-
-.status-ordered {
-  background: #2ecc71;
-}
-
-.status-bought {
-  background: #ff9f43;
-}
-
-.status-packed {
-  background: #ff6b81;
-}
-
-.status-gifted {
-  background: #9b59b6;
-}
-
-/* === АДАПТИВ === */
-
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .layout {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .sidebar,
+  .sidebar {
+    order: 2;
+  }
+
   .content {
-    width: 100%;
-    max-width: 100%;
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .panel,
+  .panel.big {
+    padding: 16px 14px 18px;
+  }
+
+  .header {
+    padding-inline: 12px;
   }
 }

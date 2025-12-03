@@ -5,12 +5,13 @@
   <title>Хранитель идей</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
 
   <header class="header">
     <h1>🎁 Хранитель идей</h1>
-    <p class="subtitle">Каталог идей для подарков: фиксируйте варианты заранее, а не в последний момент.</p>
+    <p class="subtitle">
+      Каталог идей для подарков: фиксируйте варианты заранее, а не в последний момент.
+    </p>
   </header>
 
   <main class="layout">
@@ -18,137 +19,154 @@
     <!-- ЛЕВАЯ КОЛОНКА -->
     <aside class="sidebar">
 
-      <!-- Добавление человека -->
-      <div class="panel">
+      <!-- Люди -->
+      <section class="panel">
         <h2>Люди</h2>
 
         <form id="add-person-form" class="form">
-          <label>Имя:</label>
+          <label for="person-name">Имя:</label>
           <input id="person-name" type="text" placeholder="Например: Мама" required />
 
-          <label>Отношение (необязательно):</label>
-          <input id="person-relation" type="text" placeholder="Например: мама, коллега, подруга" />
+          <label for="person-relation">Отношение (необязательно):</label>
+          <input
+            id="person-relation"
+            type="text"
+            placeholder="Например: мама, коллега, подруга"
+          />
 
-          <button type="submit">Добавить</button>
+          <button type="submit" class="btn btn-primary">Добавить человека</button>
         </form>
-      </div>
+      </section>
 
       <!-- Фильтры -->
-      <div class="panel">
-        <h2>Фильтр</h2>
+      <section class="panel">
+        <h2>Фильтры</h2>
 
         <form id="filter-form" class="form">
-
-          <label>Человек:</label>
+          <label for="filter-person">Человек:</label>
           <select id="filter-person">
             <option value="all">Все</option>
           </select>
 
-          <label>Статус:</label>
+          <label for="filter-status">Статус:</label>
           <select id="filter-status">
             <option value="all">Все</option>
             <option value="idea">Идея</option>
             <option value="planned">Запланировано</option>
             <option value="ordered">Заказано</option>
-            <option value="bought">Куплено</option>
             <option value="packed">Упаковано</option>
-            <option value="given">Подарено</option>
+            <option value="gifted">Подарено</option>
           </select>
 
           <div class="two-cols">
             <div>
-              <label>Цена от:</label>
-              <input id="price-min" type="number" value="0" />
+              <label for="price-min">Цена от:</label>
+              <input id="price-min" type="number" min="0" />
             </div>
-
             <div>
-              <label>До:</label>
-              <input id="price-max" type="number" value="5000" />
+              <label for="price-max">До:</label>
+              <input id="price-max" type="number" min="0" />
             </div>
           </div>
 
-          <button type="submit">Применить фильтр</button>
-          <button type="button" class="secondary" id="reset-filters">Сбросить</button>
+          <button type="submit" class="btn btn-primary">Применить фильтр</button>
+          <button type="button" id="reset-filters" class="btn btn-secondary">
+            Сбросить
+          </button>
         </form>
-      </div>
+      </section>
 
     </aside>
 
     <!-- ПРАВАЯ КОЛОНКА -->
     <section class="content">
 
-      <!-- Список идей -->
-      <div class="panel big">
+      <!-- Идеи для подарков -->
+      <section class="panel big">
         <div class="panel-header">
           <h2>Идеи для подарков</h2>
-          <span id="ideas-count">0 идей</span>
+          <span id="ideas-count" class="ideas-count">0 идей</span>
         </div>
-        <div id="ideas-list"></div>
-      </div>
 
-      <!-- Форма добавления идеи -->
-      <div class="panel big">
-        <h2>Новая идея</h2>
+        <div id="ideas-list" class="ideas-grid">
+          <!-- Карточки идей рендерятся скриптом -->
+        </div>
+      </section>
+
+      <!-- Форма новой идеи / редактирования -->
+      <section class="panel big">
+        <div class="panel-header">
+          <h2 id="idea-form-title">Новая идея</h2>
+          <button
+            type="button"
+            id="idea-cancel-edit"
+            class="link-button hidden"
+          >
+            Отменить редактирование
+          </button>
+        </div>
 
         <form id="add-idea-form" class="form">
 
-          <label>Для кого:</label>
+          <label for="idea-person">Для кого:</label>
           <select id="idea-person" required>
             <option value="">Выберите человека</option>
           </select>
 
-          <label>Идея подарка:</label>
-          <input id="idea-title" type="text" placeholder="Плед, мастер-класс, абонемент..." required />
+          <label for="idea-title">Идея подарка:</label>
+          <input
+            id="idea-title"
+            type="text"
+            placeholder="Плед, мастер-класс, абонемент..."
+            required
+          />
 
-          <label>Ссылка:</label>
-          <input id="idea-link" type="url" placeholder="https://пример-магазина.ru/..." />
+          <label for="idea-link">Ссылка:</label>
+          <input
+            id="idea-link"
+            type="url"
+            placeholder="https://пример-магазина.ru/..."
+          />
 
           <div class="two-cols">
             <div>
-              <label>Цена:</label>
+              <label for="idea-price">Цена:</label>
               <input id="idea-price" type="number" min="0" />
             </div>
-
             <div>
-              <label>Категория:</label>
-              <select id="idea-category" required>
+              <label for="idea-category">Категория:</label>
+              <select id="idea-category">
                 <option value="">Выберите категорию</option>
-                <option value="hobby">Хобби</option>
-                <option value="books">Книги</option>
-                <option value="gadgets">Гаджеты</option>
-                <option value="home">Для дома</option>
-                <option value="clothes">Одежда</option>
-                <option value="beauty">Красота</option>
-                <option value="kitchen">Для кухни</option>
-                <option value="accessories">Аксессуары</option>
-                <option value="creative">Креативные</option>
+                <!-- Список категорий подгружается из Supabase -->
               </select>
             </div>
           </div>
 
-          <label>Комментарий:</label>
-          <textarea id="idea-comment" placeholder="Размеры, цвет, почему эта идея подходит..."></textarea>
+          <label for="idea-comment">Комментарий:</label>
+          <textarea
+            id="idea-comment"
+            placeholder="Размеры, цвет, почему эта идея подходит..."
+          ></textarea>
 
-          <label>Статус идеи:</label>
+          <label for="idea-status">Статус идеи:</label>
           <select id="idea-status">
             <option value="idea">Идея</option>
             <option value="planned">Запланировано</option>
             <option value="ordered">Заказано</option>
-            <option value="bought">Куплено</option>
             <option value="packed">Упаковано</option>
-            <option value="given">Подарено</option>
+            <option value="gifted">Подарено</option>
           </select>
 
-          <button type="submit">Сохранить идею</button>
+          <button type="submit" id="idea-submit" class="btn btn-primary">
+            Сохранить идею
+          </button>
         </form>
-      </div>
+      </section>
 
     </section>
-
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
-
 </body>
 </html>
